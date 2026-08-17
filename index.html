@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MoneyLens — Find the Right Rate for You</title>
+  <meta name="description" content="Don't chase the highest rate. Find the financial product that actually fits your money goals, risk, liquidity and lifestyle." />
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50:  '#f0f9ff',
+              100: '#e0f2fe',
+              200: '#bae6fd',
+              300: '#7dd3fc',
+              400: '#38bdf8',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+              800: '#075985',
+              900: '#0c4a6e',
+              950: '#082f49',
+            },
+            slate: {
+              850: '#172033',
+              925: '#0f172a',
+            }
+          },
+          boxShadow: {
+            'soft': '0 2px 15px -3px rgba(0,0,0,0.07), 0 10px 20px -2px rgba(0,0,0,0.04)',
+            'card': '0 0 0 1px rgba(0,0,0,0.03), 0 2px 8px rgba(0,0,0,0.04), 0 12px 24px rgba(0,0,0,0.04)',
+            'glow': '0 0 40px -10px rgba(14,165,233,0.35)',
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-slate-50 text-slate-900 antialiased font-sans">
+
+  <!-- ========== TOP NAV ========== -->
+  <nav id="navbar" class="fixed top-0 inset-x-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-200/60 transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <!-- Logo -->
+        <a href="#" onclick="showPage('home')" class="flex items-center gap-2.5 group">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center shadow-glow">
+            <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+            </svg>
+          </div>
+          <span class="text-xl font-bold tracking-tight text-slate-900">Money<span class="text-brand-600">Lens</span></span>
+        </a>
+
+        <!-- Desktop Nav -->
+        <div class="hidden md:flex items-center gap-1">
+          <button onclick="showPage('home')" class="nav-link" data-page="home">Home</button>
+          <button onclick="showPage('compare')" class="nav-link" data-page="compare">Compare</button>
+          <button onclick="showPage('find')" class="nav-link" data-page="find">Find My Best</button>
+          <button onclick="showPage('products')" class="nav-link" data-page="products">Products</button>
+          <button onclick="showPage('calculator')" class="nav-link" data-page="calculator">Calculator</button>
+          <button onclick="showPage('learn')" class="nav-link" data-page="learn">Learn</button>
+          <button onclick="showPage('methodology')" class="nav-link" data-page="methodology">Methodology</button>
+        </div>
+
+        <!-- Right side -->
+        <div class="flex items-center gap-3">
+          <!-- Explain Like I'm New Toggle -->
+          <button id="simpleModeBtn" onclick="toggleSimpleMode()" class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border border-slate-200 bg-white hover:bg-slate-50 transition">
+            <span id="simpleModeIcon">🎓</span>
+            <span id="simpleModeLabel">Simple Mode</span>
+          </button>
+          
+          <button onclick="showPage('find')" class="btn-primary text-sm px-4 py-2">
+            Find My Best Option
+          </button>
+          
+          <!-- Mobile menu -->
+          <button id="mobileMenuBtn" class="md:hidden p-2 rounded-lg hover:bg-slate-100">
+            <i data-lucide="menu" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Mobile Menu -->
+  <div id="mobileMenu" class="fixed inset-0 z-40 bg-white hidden md:hidden pt-20 px-6">
+    <div class="flex flex-col gap-2">
+      <button onclick="showPage('home'); closeMobile()" class="mobile-nav-link">Home</button>
+      <button onclick="showPage('compare'); closeMobile()" class="mobile-nav-link">Compare</button>
+      <button onclick="showPage('find'); closeMobile()" class="mobile-nav-link">Find My Best Option</button>
+      <button onclick="showPage('products'); closeMobile()" class="mobile-nav-link">Products</button>
+      <button onclick="showPage('calculator'); closeMobile()" class="mobile-nav-link">Calculator</button>
+      <button onclick="showPage('learn'); closeMobile()" class="mobile-nav-link">Learn</button>
+      <button onclick="showPage('methodology'); closeMobile()" class="mobile-nav-link">Methodology</button>
+    </div>
+  </div>
+
+  <!-- ========== MAIN CONTENT ========== -->
+  <main id="app" class="pt-16 min-h-screen">
+
+    <!-- ==================== HOME PAGE ==================== -->
+    <section id="page-home" class="page active">
+      
+      <!-- Hero -->
+      <div class="relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-br from-brand-50 via-white to-slate-50"></div>
+        <div class="absolute top-20 right-0 w-[500px] h-[500px] bg-brand-200/30 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-sky-100/40 rounded-full blur-3xl"></div>
+        
+        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-24 lg:pt-24 lg:pb-32">
+          <div class="max-w-3xl">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-100 text-brand-700 text-xs font-semibold mb-6">
+              <span class="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse"></span>
+              New generation of financial comparison
+            </div>
+            
+            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 leading-[1.1] mb-6">
+              Don’t Chase the Highest Rate.<br>
+              <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-sky-500">Find the Right Rate for You.</span>
+            </h1>
+            
+            <p class="text-lg sm:text-xl text-slate-600 leading-relaxed mb-10 max-w-2xl">
+              MoneyLens compares <strong>return, risk, liquidity, fees and reliability</strong> in one place — then ranks products based on <em>your</em> actual situation, not just the headline number.
+            </p>
+            
+            <div class="flex flex-col sm:flex-row gap-4">
+              <button onclick="showPage('find')" class="btn-primary text-base px-8 py-3.5 shadow-glow">
+                Find My Best Option
+                <i data-lucide="arrow-right" class="w-5 h-5 ml-2"></i>
+              </button>
+              <button onclick="showPage('compare')" class="btn-secondary text-base px-8 py-3.5">
+                See Live Demo Comparison
+              </button>
+            </div>
+            
+            <!-- Trust indicators -->
+            <div class="mt-12 flex flex-wrap items-center gap-6 text-sm text-slate-500">
+              <div class="flex items-center gap-2">
+                <i data-lucide="shield-check" class="w-4 h-4 text-emerald-500"></i>
+                Transparent scoring
+              </div>
+              <div class="flex items-center gap-2">
+                <i data-lucide="eye" class="w-4 h-4 text-brand-500"></i>
+                No hidden ranking
+              </div>
+              <div class="flex items-center gap-2">
+                <i data-lucide="scale" class="w-4 h-4 text-violet-500"></i>
+                Trade-offs explained
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- How it works -->
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div class="text-center mb-14">
+          <h2 class="text-3xl font-bold text-slate-900 mb-3">How MoneyLens Works</h2>
+          <p class="text-slate-600 max-w-xl mx-auto">Five factors. One personalised score. Clear explanations.</p>
+        </div>
+        
+        <div class="grid md:grid-cols-5 gap-4">
+          <div class="factor-card">
+            <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center mb-4">
+              <i data-lucide="trending-up" class="w-5 h-5"></i>
+            </div>
+            <h3 class="font-semibold text-slate-900 mb-1">Return</h3>
+            <p class="text-sm text-slate-500">Interest rate, effective return & estimated earnings</p>
+          </div>
+          <div class="factor-card">
+            <div class="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center mb-4">
+              <i data-lucide="shield" class="w-5 h-5"></i>
+            </div>
+            <h3 class="font-semibold text-slate-900 mb-1">Risk & Protection</h3>
+            <p class="text-sm text-slate-500">Deposit protection, volatility & capital safety</p>
+          </div>
+          <div class="factor-card">
+            <div class="w-10 h-10 rounded-xl bg-sky-100 text-sky-600 flex items-center justify-center mb-4">
+              <i data-lucide="droplets" class="w-5 h-5"></i>
+            </div>
+            <h3 class="font-semibold text-slate-900 mb-1">Liquidity</h3>
+            <p class="text-sm text-slate-500">Access speed, lock-in periods & withdrawal ease</p>
+          </div>
+          <div class="factor-card">
+            <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center mb-4">
+              <i data-lucide="receipt" class="w-5 h-5"></i>
+            </div>
+            <h3 class="font-semibold text-slate-900 mb-1">Fees & Requirements</h3>
+            <p class="text-sm text-slate-500">Min deposit, conditions & hidden costs</p>
+          </div>
+          <div class="factor-card">
+            <div class="w-10 h-10 rounded-xl bg-violet-100 text-violet-600 flex items-center justify-center mb-4">
+              <i data-lucide="smartphone" class="w-5 h-5"></i>
+            </div>
+            <h3 class="font-semibold text-slate-900 mb-1">Reliability</h3>
+            <p class="text-sm text-slate-500">Institution trust, app quality & convenience</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Demo Comparison -->
+      <div class="bg-slate-900 text-white py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-10">
+            <div>
+              <div class="inline-flex items-center gap-2 text-brand-300 text-sm font-medium mb-3">
+                <span class="w-2 h-2 rounded-full bg-brand-400"></span>
+                Live Demo (fictional products)
+              </div>
+              <h2 class="text-3xl font-bold mb-2">See the difference Money Fit Score makes</h2>
+              <p class="text-slate-400 max-w-xl">Same RM 50,000 • 12-month horizon • Goal: Emergency Fund (high liquidity + capital protection)</p>
+            </div>
+            <button onclick="showPage('find')" class="btn-primary">Run Your Own Comparison</button>
+          </div>
+          
+          <div id="demo-cards" class="grid md:grid-cols-3 gap-5">
+            <!-- Filled by JS -->
+          </div>
+          
+          <p class="mt-8 text-center text-sm text-slate-500">
+            Demo data only. Not real financial products. Scores recalculate based on your personal priorities.
+          </p>
+        </div>
+      </div>
+
+      <!-- Key Features Grid -->
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div class="text-center mb-14">
+          <h2 class="text-3xl font-bold text-slate-900 mb-3">Built for real decisions</h2>
+          <p class="text-slate-600">Features that help you understand trade-offs, not just rank numbers.</p>
+        </div>
+        
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div class="feature-tile">
+            <div class="icon-box bg-brand-50 text-brand-600"><i data-lucide="sliders" class="w-5 h-5"></i></div>
+            <h3 class="font-semibold mb-1">Personalised Weighting</h3>
+            <p class="text-sm text-slate-500">Emergency fund? Liquidity gets higher weight. Long-term saver? Return gets boosted.</p>
+          </div>
+          <div class="feature-tile">
+            <div class="icon-box bg-rose-50 text-rose-600"><i data-lucide="alert-triangle" class="w-5 h-5"></i></div>
+            <h3 class="font-semibold mb-1">Rate Reality Check</h3>
+            <p class="text-sm text-slate-500">We flag “5.00% requires 6 conditions” so you never fall for promotional headlines.</p>
+          </div>
+          <div class="feature-tile">
+            <div class="icon-box bg-emerald-50 text-emerald-600"><i data-lucide="git-compare" class="w-5 h-5"></i></div>
+            <h3 class="font-semibold mb-1">Trade-Off Finder</h3>
+            <p class="text-sm text-slate-500">“Option A earns ~RM240 more, but Option B lets you access money anytime.”</p>
+          </div>
+          <div class="feature-tile">
+            <div class="icon-box bg-violet-50 text-violet-600"><i data-lucide="radar" class="w-5 h-5"></i></div>
+            <h3 class="font-semibold mb-1">5-Factor Radar</h3>
+            <p class="text-sm text-slate-500">Visual radar chart shows strengths and weaknesses of every product at a glance.</p>
+          </div>
+          <div class="feature-tile">
+            <div class="icon-box bg-amber-50 text-amber-600"><i data-lucide="calculator" class="w-5 h-5"></i></div>
+            <h3 class="font-semibold mb-1">What-If Simulator</h3>
+            <p class="text-sm text-slate-500">Project growth of RM10k–RM100k over 3 months to 5 years with clear disclaimers.</p>
+          </div>
+          <div class="feature-tile">
+            <div class="icon-box bg-sky-50 text-sky-600"><i data-lucide="book-open" class="w-5 h-5"></i></div>
+            <h3 class="font-semibold mb-1">Explain Like I’m New</h3>
+            <p class="text-sm text-slate-500">Toggle simple language. “p.a.” becomes “per year”. Lock-in becomes “hard to withdraw”.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- CTA -->
+      <div class="bg-gradient-to-r from-brand-600 to-sky-500 py-16">
+        <div class="max-w-3xl mx-auto text-center px-4">
+          <h2 class="text-3xl font-bold text-white mb-4">Ready to stop guessing?</h2>
+          <p class="text-brand-100 mb-8 text-lg">Answer a few questions and get a ranking built for your actual money situation.</p>
+          <button onclick="showPage('find')" class="bg-white text-brand-700 font-semibold px-8 py-3.5 rounded-xl hover:bg-brand-50 transition shadow-lg">
+            Start Personalisation →
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== FIND MY BEST (Personalisation) ==================== -->
+    <section id="page-find" class="page hidden">
+      <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        
+        <!-- Progress -->
+        <div class="mb-10">
+          <div class="flex items-center justify-between text-sm text-slate-500 mb-2">
+            <span id="stepLabel">Step 1 of 7</span>
+            <span id="progressPct">14%</span>
+          </div>
+          <div class="h-1.5 bg-slate-200 rounded-full overflow-hidden">
+            <div id="progressBar" class="h-full bg-brand-500 rounded-full transition-all duration-500" style="width:14%"></div>
+          </div>
+        </div>
+
+        <!-- Questions Container -->
+        <div id="quizContainer" class="bg-white rounded-2xl shadow-card border border-slate-100 p-6 sm:p-10">
+          <!-- Filled by JS -->
+        </div>
+
+        <!-- Navigation -->
+        <div class="flex justify-between mt-8">
+          <button id="prevBtn" onclick="prevStep()" class="btn-secondary px-6 py-2.5 opacity-0 pointer-events-none">
+            ← Back
+          </button>
+          <button id="nextBtn" onclick="nextStep()" class="btn-primary px-8 py-2.5">
+            Continue
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== RESULTS ==================== -->
+    <section id="page-results" class="page hidden">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        
+        <!-- Summary Header -->
+        <div class="bg-white rounded-2xl shadow-card border border-slate-100 p-6 sm:p-8 mb-8">
+          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div>
+              <div class="text-sm text-brand-600 font-semibold mb-1">Your MoneyLens Summary</div>
+              <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 mb-2" id="resultsTitle">Best matches for your goal</h1>
+              <p class="text-slate-600" id="resultsSubtitle">Based on your answers</p>
+              
+              <div class="flex flex-wrap gap-2 mt-4" id="personalityBadges">
+                <!-- filled by JS -->
+              </div>
+            </div>
+            
+            <div class="flex gap-3">
+              <button onclick="showPage('find')" class="btn-secondary text-sm">Edit Answers</button>
+              <button onclick="showPage('compare')" class="btn-primary text-sm">Full Compare</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ranked Products -->
+        <div id="rankedProducts" class="space-y-5">
+          <!-- filled by JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== COMPARE PAGE ==================== -->
+    <section id="page-compare" class="page hidden">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="mb-8">
+          <h1 class="text-3xl font-bold text-slate-900 mb-2">Compare Products</h1>
+          <p class="text-slate-600">Select up to 3 products for side-by-side comparison. All scores use transparent Money Fit methodology.</p>
+        </div>
+
+        <!-- Filters -->
+        <div class="bg-white rounded-xl border border-slate-200 p-4 mb-6 flex flex-wrap gap-3 items-center">
+          <select id="filterType" onchange="applyFilters()" class="input-select">
+            <option value="all">All Types</option>
+            <option value="savings">Savings Account</option>
+            <option value="fd">Fixed Deposit</option>
+            <option value="money_market">Money Market</option>
+            <option value="digital_bank">Digital Bank</option>
+          </select>
+          <select id="filterRisk" onchange="applyFilters()" class="input-select">
+            <option value="all">Any Risk</option>
+            <option value="protected">Capital Protected</option>
+            <option value="low">Low Risk</option>
+            <option value="medium">Medium Risk</option>
+          </select>
+          <select id="sortBy" onchange="applyFilters()" class="input-select">
+            <option value="fit">Best Overall Match</option>
+            <option value="return">Highest Return</option>
+            <option value="risk">Lowest Risk</option>
+            <option value="liquidity">Most Liquid</option>
+            <option value="min_deposit">Lowest Min Deposit</option>
+          </select>
+          <div class="ml-auto text-sm text-slate-500">
+            <span id="productCount">0</span> products
+          </div>
+        </div>
+
+        <!-- Product Grid -->
+        <div id="productGrid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-10">
+          <!-- filled by JS -->
+        </div>
+
+        <!-- Compare Bar -->
+        <div id="compareBar" class="fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 shadow-lg p-4 transform translate-y-full transition-transform duration-300 z-40">
+          <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
+            <div class="flex items-center gap-3 overflow-x-auto" id="compareSlots">
+              <!-- selected products -->
+            </div>
+            <button id="compareBtn" onclick="runCompare()" class="btn-primary whitespace-nowrap opacity-50 pointer-events-none">
+              Compare Selected
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== PRODUCT DETAIL ==================== -->
+    <section id="page-product" class="page hidden">
+      <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <button onclick="showPage('compare')" class="text-sm text-slate-500 hover:text-brand-600 mb-6 flex items-center gap-1">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Compare
+        </button>
+        
+        <div id="productDetail">
+          <!-- filled by JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== CALCULATOR ==================== -->
+    <section id="page-calculator" class="page hidden">
+      <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <h1 class="text-3xl font-bold text-slate-900 mb-2">Financial Calculators</h1>
+        <p class="text-slate-600 mb-10">Estimate growth, understand fees, and run what-if scenarios.</p>
+
+        <div class="grid lg:grid-cols-2 gap-8">
+          <!-- What-If Simulator -->
+          <div class="bg-white rounded-2xl shadow-card border border-slate-100 p-6">
+            <h2 class="text-xl font-bold mb-1 flex items-center gap-2">
+              <i data-lucide="sparkles" class="w-5 h-5 text-brand-500"></i>
+              What-If Simulator
+            </h2>
+            <p class="text-sm text-slate-500 mb-6">See how different products grow the same amount of money.</p>
+            
+            <div class="space-y-4 mb-6">
+              <div>
+                <label class="label">Amount (RM)</label>
+                <input type="number" id="simAmount" value="50000" class="input-field" min="1000" step="1000">
+              </div>
+              <div>
+                <label class="label">Time Period</label>
+                <select id="simPeriod" class="input-field">
+                  <option value="3">3 months</option>
+                  <option value="6">6 months</option>
+                  <option value="12" selected>1 year</option>
+                  <option value="36">3 years</option>
+                  <option value="60">5 years</option>
+                </select>
+              </div>
+            </div>
+            
+            <button onclick="runSimulator()" class="btn-primary w-full mb-6">Run Simulation</button>
+            
+            <div id="simResults" class="space-y-3">
+              <!-- results -->
+            </div>
+          </div>
+
+          <!-- Future Value -->
+          <div class="bg-white rounded-2xl shadow-card border border-slate-100 p-6">
+            <h2 class="text-xl font-bold mb-1 flex items-center gap-2">
+              <i data-lucide="calculator" class="w-5 h-5 text-emerald-500"></i>
+              Future Value Calculator
+            </h2>
+            <p class="text-sm text-slate-500 mb-6">Simple compound interest projection.</p>
+            
+            <div class="space-y-4 mb-6">
+              <div>
+                <label class="label">Principal (RM)</label>
+                <input type="number" id="fvPrincipal" value="10000" class="input-field">
+              </div>
+              <div>
+                <label class="label">Annual Rate (%)</label>
+                <input type="number" id="fvRate" value="3.5" step="0.01" class="input-field">
+              </div>
+              <div>
+                <label class="label">Years</label>
+                <input type="number" id="fvYears" value="5" class="input-field">
+              </div>
+            </div>
+            
+            <button onclick="calcFutureValue()" class="btn-primary w-full mb-6">Calculate</button>
+            
+            <div id="fvResult" class="bg-slate-50 rounded-xl p-5 text-center hidden">
+              <div class="text-sm text-slate-500 mb-1">Estimated Future Value</div>
+              <div class="text-3xl font-bold text-slate-900" id="fvValue">RM 0</div>
+              <div class="text-sm text-emerald-600 mt-1" id="fvInterest">Interest: RM 0</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== LEARN ==================== -->
+    <section id="page-learn" class="page hidden">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <h1 class="text-3xl font-bold text-slate-900 mb-2">Learn</h1>
+        <p class="text-slate-600 mb-10">Short, clear explanations of the concepts that actually matter.</p>
+        
+        <div class="space-y-4" id="learnArticles">
+          <!-- filled by JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== METHODOLOGY ==================== -->
+    <section id="page-methodology" class="page hidden">
+      <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <h1 class="text-3xl font-bold text-slate-900 mb-6">Scoring Methodology</h1>
+        
+        <div class="prose prose-slate max-w-none space-y-8">
+          <div class="bg-amber-50 border border-amber-200 rounded-xl p-5 text-sm text-amber-900">
+            <strong>Important:</strong> MoneyLens scores are decision-support tools, not financial advice. Projected returns are not guaranteed. Always verify current terms directly with the financial institution before making decisions.
+          </div>
+
+          <div>
+            <h2 class="text-xl font-bold mb-3">The Money Fit Score (0–100)</h2>
+            <p class="text-slate-600 leading-relaxed">
+              Every product receives a score based on five weighted categories. Default weights can be adjusted by your personal preferences and financial goal.
+            </p>
+            
+            <div class="mt-6 space-y-3">
+              <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                <span class="font-medium">Return / Interest Rate</span>
+                <span class="font-mono text-brand-600">30%</span>
+              </div>
+              <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                <span class="font-medium">Risk & Capital Protection</span>
+                <span class="font-mono text-brand-600">30%</span>
+              </div>
+              <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                <span class="font-medium">Liquidity</span>
+                <span class="font-mono text-brand-600">20%</span>
+              </div>
+              <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                <span class="font-medium">Fees & Requirements</span>
+                <span class="font-mono text-brand-600">10%</span>
+              </div>
+              <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                <span class="font-medium">Reliability & Convenience</span>
+                <span class="font-mono text-brand-600">10%</span>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h2 class="text-xl font-bold mb-3">No Hidden Ranking</h2>
+            <p class="text-slate-600 leading-relaxed">
+              We never rank a product higher simply because it has a higher advertised rate. Promotional rates that require strict conditions are penalised in the Fees & Requirements category and clearly flagged with a “Rate Reality Check”.
+            </p>
+          </div>
+
+          <div>
+            <h2 class="text-xl font-bold mb-3">Dynamic Weighting</h2>
+            <p class="text-slate-600 leading-relaxed">
+              When you select “Emergency Fund”, Liquidity and Risk weights increase. When you select “Maximum Return”, the Return weight increases. This is why there is no universal #1 product.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-slate-900 text-slate-400 py-12 mt-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex flex-col md:flex-row justify-between gap-8">
+        <div>
+          <div class="flex items-center gap-2 mb-3">
+            <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center">
+              <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+              </svg>
+            </div>
+            <span class="text-white font-bold">MoneyLens</span>
+          </div>
+          <p class="text-sm max-w-xs">Decision-support tool for comparing savings and investment products. Not financial advice.</p>
+        </div>
+        <div class="text-sm">
+          <p class="text-slate-500">Demo data only • Verified recently</p>
+          <p class="mt-2">© 2026 MoneyLens. Built for clarity.</p>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="data/products.js"></script>
+  <script src="js/scoring.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    // Init Lucide icons
+    lucide.createIcons();
+  </script>
+</body>
+</html>
